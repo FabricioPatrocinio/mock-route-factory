@@ -1,0 +1,56 @@
+Cria um projeto Go do zero com a estrutura e comportamento abaixo. Nome do módulo: use um placeholder `github.com/SEU_USUARIO/mock-route-factory` (comentar onde trocar).
+
+## Objetivo
+API HTTP em Go que persiste "mocks" de rota (método + path) no PostgreSQL e, para qualquer outro path (fora de rotas reservadas), devolve o JSON e o status HTTP gravados na base. Uso: homologação/QA.
+
+## Stack
+- Go 1.22+
+- `github.com/go-chi/chi/v5` para router e middlewares (RequestID, RealIP, Logger, Recoverer)
+- `github.com/lib/pq` para Postgres
+- `github.com/joho/godotenv` opcional no main (`godotenv.Load()`)
+- `database/sql`, sem ORM
+
+## Configuração via ambiente (.env.example obrigatório)
+Variáveis:
+- PORT (default 8080)
+- DB_NAME, DB_PORT (default 5432), DB_WRITER_HOST, DB_READER_HOST, DB_SSL_MODE (default disable)
+- DB_MOCKS_USER, DB_MOCKS_SCHEMA (default public), DB_MOCKS_PASSWORD
+Validar schema como identificador SQL seguro (apenas letras, dígitos, underscore; primeira posição letra ou underscore).
+Construir DSN Postgres com user/password; `search_path` via `options=-csearch_path=SCHEMA` na query do DSN.
+Abrir dois `*sql.DB` (writer e reader) com limites de pool razoáveis; ping em ambos.
+
+## Migração automática
+No arranque, no writer:
+- `CREATE SCHEMA IF NOT EXISTS` para o schema dos mocks
+- Tabela `http_route_mocks` com: id BIGSERIAL PK, method TEXT, path TEXT, status INT default 200, response_body JSONB, updated_at TIMESTAMPTZ, UNIQUE(method, path)
+- Índice em (method, path)
+Usar `CREATE TABLE IF NOT EXISTS` e `IF NOT EXISTS` no índice. Qualificar schema.table com `pq.QuoteIdentifier`.
+
+## Modelo de dados
+- Upsert: path (começa com /), method (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS), status HTTP, response (JSON body obrigatório e válido).
+- Normalizar path (trim, tirar barra final exceto raiz "/").
+- Bloquear paths que comecem com `/admin`, bloquear `/health`.
+- Mock retornado com id, method, path, status, response (JSON), updated_at.
+
+## Rotas HTTP
+- GET `/health` → JSON `{ "status": "ok" }`
+- Swagger/OpenAPI servido em `/swagger` (embed ou handler simples) + ficheiro `openapi/openapi.yaml` cobrindo pelo menos health e admin
+- Grupo `/admin`:
+  - POST `/admin/mocks` → upsert (body JSON)
+  - GET `/admin/mocks` → lista todos
+  - GET `/admin/mocks/curls` → lista mocks com base URL derivada do request ou env opcional `PUBLIC_BASE_URL` para curls prontos
+  - DELETE `/admin/mocks?method=&path=` → apagar (404 se não existir)
+- Qualquer outro método+path (catch-all): resolver contra Postgres; se encontrado, responder Content-Type application/json e body gravado com o status gravado; se não, 404 JSON. NotFound e MethodNotAllowed devem passar pelo mesmo handler dinâmico quando aplicável (comportamento chi usual).
+
+## Repo
+Camada `internal/repo` com Upsert, Get, List, Delete; erro sentinel para não encontrado.
+SQL com upsert `ON CONFLICT (method, path) DO UPDATE`.
+
+## Qualidade
+- Mensagens de erro JSON consistentes em handlers
+- README em inglês ou português explicando env, docker run postgres opcional, limitações (sem auth admin por defeito), considerações de segurança
+- `.gitignore`: `.env`, `dist/`, binários
+- `go build ./...` deve passar
+
+Entrega: árvore de ficheiros completa e comandos para correr localmente.
+EOF

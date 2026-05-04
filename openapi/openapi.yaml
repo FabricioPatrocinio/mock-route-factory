@@ -1,0 +1,187 @@
+openapi: "3.0.3"
+info:
+  title: Mock Route Factory
+  version: "1.0.0"
+  description: >
+    HTTP mock server — store method+path mocks in PostgreSQL and replay them on demand.
+    Designed for QA / staging environments.
+
+servers:
+  - url: http://localhost:8080
+    description: Local development
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: getHealth
+      tags: [system]
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  /admin/mocks:
+    get:
+      summary: List all registered mocks
+      operationId: listMocks
+      tags: [admin]
+      responses:
+        "200":
+          description: Array of mocks (empty array if none)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Mock"
+        "500":
+          $ref: "#/components/responses/Error"
+
+    post:
+      summary: Create or update a mock (upsert on method+path)
+      operationId: upsertMock
+      tags: [admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertRequest"
+            examples:
+              basic:
+                summary: Simple GET mock
+                value:
+                  method: GET
+                  path: /api/v1/users
+                  status: 200
+                  response:
+                    items: []
+                    total: 0
+      responses:
+        "201":
+          description: Mock created or updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Mock"
+        "400":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+
+    delete:
+      summary: Delete a mock by method and path
+      operationId: deleteMock
+      tags: [admin]
+      parameters:
+        - name: method
+          in: query
+          required: true
+          schema:
+            type: string
+            example: GET
+        - name: path
+          in: query
+          required: true
+          schema:
+            type: string
+            example: /api/v1/users
+      responses:
+        "204":
+          description: Mock deleted successfully
+        "400":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+
+  /admin/mocks/curls:
+    get:
+      summary: List mocks with ready-to-use curl commands
+      operationId: listMockCurls
+      tags: [admin]
+      responses:
+        "200":
+          description: Array of mock+curl pairs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CurlItem"
+        "500":
+          $ref: "#/components/responses/Error"
+
+components:
+  schemas:
+    Mock:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+        method:
+          type: string
+          example: GET
+        path:
+          type: string
+          example: /api/v1/users
+        status:
+          type: integer
+          example: 200
+        response:
+          description: Arbitrary JSON value returned as the mock body
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+
+    UpsertRequest:
+      type: object
+      required: [method, path, response]
+      properties:
+        method:
+          type: string
+          enum: [GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS]
+        path:
+          type: string
+          description: Must start with /. Cannot be /health or under /admin.
+          example: /api/v1/orders
+        status:
+          type: integer
+          description: HTTP status code (100–599). Defaults to 200.
+          default: 200
+        response:
+          description: Any valid JSON value to return as mock body (required).
+
+    CurlItem:
+      type: object
+      properties:
+        mock:
+          $ref: "#/components/schemas/Mock"
+        curl:
+          type: string
+          example: "curl -s -X GET 'http://localhost:8080/api/v1/users'"
+
+  responses:
+    Error:
+      description: Error response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
