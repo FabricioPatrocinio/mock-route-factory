@@ -2,6 +2,12 @@
 
 HTTP API that stores route mocks (method + path) in PostgreSQL and replays them on demand. Built for QA / staging environments.
 
+## Requirements
+
+- **Go 1.22+** — [download and install](https://go.dev/dl/)  
+  Not sure which version you have? Run `go version`. If you prefer a graphical installer, the official download page offers `.pkg` (macOS) and `.msi` (Windows) installers — no terminal setup required.
+- **PostgreSQL 14+** — a local instance or any accessible host works; the Quick start below covers spinning one up with Docker.
+
 ## Quick start
 
 ### 1. Postgres (Docker)
