@@ -8,8 +8,7 @@ import (
 
 	_ "github.com/lib/pq"
 
-	// TODO: replace SEU_USUARIO with your GitHub username
-	"github.com/SEU_USUARIO/mock-route-factory/internal/config"
+	"github.com/FabricioPatrocinio/mock-route-factory/internal/config"
 )
 
 func Open(cfg *config.Config) (writer, reader *sql.DB, err error) {

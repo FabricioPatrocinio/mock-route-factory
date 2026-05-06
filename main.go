@@ -9,12 +9,11 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
 
-	// TODO: replace SEU_USUARIO with your GitHub username in all lines below
-	"github.com/SEU_USUARIO/mock-route-factory/internal/config"
-	"github.com/SEU_USUARIO/mock-route-factory/internal/db"
-	"github.com/SEU_USUARIO/mock-route-factory/internal/handler"
-	"github.com/SEU_USUARIO/mock-route-factory/internal/migrate"
-	"github.com/SEU_USUARIO/mock-route-factory/internal/repo"
+	"github.com/FabricioPatrocinio/mock-route-factory/internal/config"
+	"github.com/FabricioPatrocinio/mock-route-factory/internal/db"
+	"github.com/FabricioPatrocinio/mock-route-factory/internal/handler"
+	"github.com/FabricioPatrocinio/mock-route-factory/internal/migrate"
+	"github.com/FabricioPatrocinio/mock-route-factory/internal/repo"
 )
 
 //go:embed openapi/openapi.yaml

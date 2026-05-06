@@ -1,5 +1,4 @@
-// TODO: replace SEU_USUARIO with your GitHub username in the line below AND in every internal import path
-module github.com/SEU_USUARIO/mock-route-factory
+module github.com/FabricioPatrocinio/mock-route-factory
 
 go 1.22
 

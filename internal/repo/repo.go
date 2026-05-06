@@ -7,8 +7,7 @@ import (
 
 	"github.com/lib/pq"
 
-	// TODO: replace SEU_USUARIO with your GitHub username
-	"github.com/SEU_USUARIO/mock-route-factory/internal/model"
+	"github.com/FabricioPatrocinio/mock-route-factory/internal/model"
 )
 
 var ErrNotFound = errors.New("mock not found")

@@ -8,9 +8,8 @@ import (
 	"net/http"
 	"strings"
 
-	// TODO: replace SEU_USUARIO with your GitHub username
-	"github.com/SEU_USUARIO/mock-route-factory/internal/model"
-	"github.com/SEU_USUARIO/mock-route-factory/internal/repo"
+	"github.com/FabricioPatrocinio/mock-route-factory/internal/model"
+	"github.com/FabricioPatrocinio/mock-route-factory/internal/repo"
 )
 
 var allowedMethods = map[string]bool{

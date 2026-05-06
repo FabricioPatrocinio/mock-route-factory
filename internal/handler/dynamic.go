@@ -5,8 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	// TODO: replace SEU_USUARIO with your GitHub username
-	"github.com/SEU_USUARIO/mock-route-factory/internal/repo"
+	"github.com/FabricioPatrocinio/mock-route-factory/internal/repo"
 )
 
 type Dynamic struct {
